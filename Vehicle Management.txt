@@ -1,0 +1,75 @@
+Problem : My problem Statement: So basically, I worked in company lived in Raigarh Chhattisgarh now there are around 11 vehicles for 60 employees to travel from raigarh to site office which is around 60km from raigarh these employees live in different parts of raigarh and in each vehicle who will come is decidedand changes around 2 -3 months duration some vehicles have 4 some may have 5 like that now problem is that suppose in some employee is on leave then seat remains vacant as no one knows so if employees get notified that there is seat vacant then they can shift to that vehicle this is now done over phone calls by one member. also suppose out of total 4-5 employees are on leave then by managing them we can save 140 km travel by an vehicle and we can save money. Now this is one-part other part is that after arrival on site office as its coal mine some may go to site or any other other work then they dont know availabity of vehicle whether it is present on parking or who taken it so there is time waste so need to make a uber like app where employee will share from to where he has to go then driver will accept or reject based on availability in first case employee address is saved and in second case employee needs to select from where to where he has to travel and based on this trip will be accepted also driver must have feature to enter hmr readings for each travel for log books did you understand suggestions are accepted
+
+
+My Solution :
+
+Case 1: Carpooling (Fixed Route)
+Features:
+Employee Management:
+
+Store employee details and addresses.
+Allow employees to update their status (e.g., on leave, available).
+Vehicle Management:
+
+Assign vehicles to employees.
+Track the availability of vehicles.
+Notify employees of vacant seats.
+Trip Management:
+
+Automatically set the trip route from Raigarh to the site office.
+Allow employees to update their status to notify others of vacant seats.
+Track and log each trip for record-keeping.
+Notifications:
+
+Notify employees about vacant seats.
+Notify drivers about status updates.
+Logic Flow:
+Login:
+
+Employees and drivers log in with their credentials.
+Dashboard:
+
+Employees see their assigned vehicle and can update their status.
+Drivers see the status of their assigned vehicle and trip logs.
+Update Status:
+
+Employees update their status (e.g., on leave) to notify others of vacant seats.
+Notifications are sent to other employees about the vacant seat.
+Trip Logging:
+
+Drivers update the status of their vehicle (e.g., available, in use).
+Enter HMR readings after each trip.
+Case 2: Uber-like (Dynamic Routes)
+Features:
+Employee Management:
+
+Store employee details.
+Vehicle Management:
+
+Track the availability of vehicles.
+Allow drivers to update vehicle status and enter HMR readings.
+Trip Management:
+
+Employees can request a ride by specifying their destination.
+Drivers can accept or reject ride requests based on availability.
+Track and log each trip for record-keeping.
+Notifications:
+
+Notify drivers about ride requests.
+Notify employees about ride confirmations.
+Logic Flow:
+Login:
+
+Employees and drivers log in with their credentials.
+Dashboard:
+
+Employees can request a ride by specifying their destination.
+Drivers see pending ride requests and vehicle status.
+Ride Request:
+
+Employees enter their destination and submit a ride request.
+Drivers receive notifications and can accept or reject requests.
+Trip Logging:
+
+Drivers update the status of their vehicle (e.g., available, in use).
+Enter HMR readings after each trip.
