@@ -1,0 +1,115 @@
+import base64
+import os
+from io import BytesIO
+from flask import Flask, render_template, redirect, url_for, request, flash
+import matplotlib
+import matplotlib.pyplot as plt
+import pandas as pd
+from werkzeug.security import generate_password_hash, check_password_hash
+from matplotlib.animation import FuncAnimation
+import mysql.connector
+import plotly.graph_objects as go
+import numpy as np
+
+matplotlib.rcParams['animation.embed_limit'] = 2**128
+app = Flask(__name__)
+UPLOAD_FOLDER = 'uploads/' # Define your upload folder
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Existing functions...
+
+def plot_blasting_pattern(positions, burden, spacing, num_rows, connection_type, row_delay=None, diagonal_delay=None, pattern_type=None, free_faces=[]):
+    x, y = zip(*positions)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.set_xticks([])
+    ax.set_yticks([])
+    scatter = ax.scatter(x, y, c='blue', s=100, edgecolors='black')
+    delays = [None] * len(positions)
+    last_row_start = (num_rows - 1) * (len(positions) // num_rows)
+    delays[last_row_start] = 0
+
+    if row_delay is not None:
+        for i in range(last_row_start + 1, len(positions)):
+            delays[i] = delays[i-1] + row_delay
+        for row in range(num_rows - 2, -1, -1):
+            row_start = row * (len(positions) // num_rows)
+            for i in range(row_start, row_start + (len(positions) // num_rows)):
+                if i % (len(positions) // num_rows) == 0:
+                    if row % 2 == 1:
+                        delays[i] = delays[i + (len(positions) // num_rows) + 1] + (diagonal_delay if diagonal_delay is not None else 0)
+                    else:
+                        delays[i] = delays[i + (len(positions) // num_rows)] + (diagonal_delay if diagonal_delay is not None else 0)
+                else:
+                    delays[i] = delays[i-1] + row_delay
+
+    ax.grid(False)
+    ax.set_xlim(-spacing, max(x) + spacing)
+    ax.set_ylim(-spacing, max(y) + burden + 10)
+    ax.set_aspect('equal', adjustable='box')
+
+    # Draw parallelogram based on free face selection
+    def draw_parallelogram(ax, x_start, y_start, length, height, color='green'):
+        parallelogram = plt.Polygon([(x_start, y_start), (x_start + length, y_start), (x_start + length - height, y_start + height), (x_start - height, y_start + height)], closed=True, color=color, alpha=0.5)
+        ax.add_patch(parallelogram)
+
+    row_length = (len(positions) // num_rows) * spacing
+    if 'top' in free_faces:
+        draw_parallelogram(ax, 0, max(y) + burden, row_length, burden / 2)
+    if 'bottom' in free_faces:
+        draw_parallelogram(ax, 0, -burden / 2, row_length, burden / 2)
+    if 'left' in free_faces:
+        draw_parallelogram(ax, -spacing / 2, 0, burden / 2, row_length)
+    if 'right' in free_faces:
+        draw_parallelogram(ax, max(x) + spacing, 0, burden / 2, row_length)
+
+    return fig, ax, scatter, delays
+
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    # Extract form data
+    mine_name = request.form['mine_name']
+    location = request.form['location']
+    date_str = request.form['date']
+    free_faces = request.form.getlist('free_face[]')
+    # Other form data...
+
+    # Handle image upload
+    post_blast_image = request.files.get('post_blast_image')
+    post_blast_image_base64 = None
+    if post_blast_image and post_blast_image.filename != '':
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], post_blast_image.filename)
+        post_blast_image.save(image_path) # Save image to the upload folder
+
+        # Open the image and add text
+        img = Image.open(image_path)
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.load_default()
+        text = f"Mine: {mine_name}\nDate: {date_str}\nLocation: {location}"
+        text_position = (img.width - 200, 10)  # Adjust position as needed
+        draw.text(text_position, text, font=font, fill="white")
+
+        # Save the modified image
+        img_byte_arr = BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        img_byte_arr.seek(0)
+        post_blast_image_base64 = base64.b64encode(img_byte_arr.read()).decode('utf-8')
+
+    # Existing code for calculations and rendering...
+
+    positions = generate_blasting_pattern(pattern_type, num_holes, burden, spacing, num_rows)
+    fig, ax, scatter, delays = plot_blasting_pattern(positions, burden, spacing, num_rows, connection_type, row_delay=row_delay, diagonal_delay=diagonal_delay, pattern_type=pattern_type, free_faces=free_faces)
+    animation_html = None
+    blasting_pattern_base64 = None
+    if user_input == 'yes':
+        anim_fig = create_animation_plotly(positions, delays)
+        animation_html = anim_fig.to_html(full_html=False)
+    else:
+        blasting_pattern_img = BytesIO()
+        plt.savefig(blasting_pattern_img, format='png')
+        blasting_pattern_img.seek(0)
+        blasting_pattern_base64 = base64.b64encode(blasting_pattern_img.read()).decode('utf-8')
+
+    return render_template('plot.html', summary_table=df_summary.values, blasting_pattern=blasting_pattern_base64, single_hole_diagram=single_hole_diagram_base64, animation_html=animation_html, post_blast_image=post_blast_image_base64, mine_name=mine_name, date_str=date_str, location=location)
+
+if __name__ == '__main__':
+    app.run()
