@@ -1,0 +1,74 @@
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
+
+# Define parameters
+explosive_density_g_cm3 = 1.6  # Example value
+explosive_density_kg_m3 = explosive_density_g_cm3 * 1000
+explosive_quantity_top_kg = 20  # Example value for top explosive
+explosive_quantity_bottom_kg = 21  # Example value for bottom explosive
+diameter_mm = 160  # Example value
+depth_m = 6  # Example value
+nonel_length_top_m = 3 # Example value for top Nonel
+nonel_length_bottom_m = 6 # Example value for bottom Nonel
+
+# Calculate charge height for each explosive
+charge_height_top = explosive_quantity_top_kg / (explosive_density_kg_m3 * (diameter_mm / 1000) ** 2 * 3.141592653589793 / 4)
+charge_height_bottom = explosive_quantity_bottom_kg / (explosive_density_kg_m3 * (diameter_mm / 1000) ** 2 * 3.141592653589793 / 4)
+
+# Calculate stemming distances
+total_charge_height = charge_height_top + charge_height_bottom
+intermediate_stemming_m = (depth_m - total_charge_height) / 2
+top_stemming_m = depth_m - (charge_height_top + charge_height_bottom + intermediate_stemming_m)
+
+# Create combined plot
+fig, ax = plt.subplots()
+
+# Plot bottom explosive charge
+charge_bottom = plt.Rectangle((0.5 - diameter_mm / 2000, 0), diameter_mm / 1000, charge_height_bottom, edgecolor='black', facecolor='black', label='Bottom Explosive Charge')
+ax.add_patch(charge_bottom)
+
+# Plot intermediate stemming
+stemming_intermediate = plt.Rectangle((0.5 - diameter_mm / 2000, charge_height_bottom), diameter_mm / 1000, intermediate_stemming_m, edgecolor='black', facecolor='grey', label='Intermediate Stemming')
+ax.add_patch(stemming_intermediate)
+
+# Plot top explosive charge
+charge_top = plt.Rectangle((0.5 - diameter_mm / 2000, charge_height_bottom + intermediate_stemming_m), diameter_mm / 1000, charge_height_top, edgecolor='black', facecolor='black', label='Top Explosive Charge')
+ax.add_patch(charge_top)
+
+# Plot top stemming
+stemming_top = plt.Rectangle((0.5 - diameter_mm / 2000, charge_height_bottom + intermediate_stemming_m + charge_height_top), diameter_mm / 1000, top_stemming_m, edgecolor='black', facecolor='grey', label='Top Stemming')
+ax.add_patch(stemming_top)
+
+# Plot Nonel lines (reversed)
+nonel_line_bottom = plt.Line2D([0.5] * 2, [charge_height_bottom / 2, charge_height_bottom / 2 + nonel_length_bottom_m], color='red', linewidth=2, label='Bottom Nonel Line')
+ax.add_line(nonel_line_bottom)
+nonel_line_top = plt.Line2D([0.47] * 2, [charge_height_bottom + intermediate_stemming_m + charge_height_top / 2, charge_height_bottom + intermediate_stemming_m + charge_height_top / 2 + nonel_length_top_m], color='orange', linewidth=2, label='Top Nonel Line')
+ax.add_line(nonel_line_top)
+
+# Plot boosters
+booster_bottom = plt.Rectangle((0.5 - diameter_mm / 2000 / 2, charge_height_bottom / 7), 0.5 * diameter_mm / 1000, 0.5, edgecolor='black', facecolor='yellow', label='Bottom Booster')
+ax.add_patch(booster_bottom)
+booster_top = plt.Rectangle((0.47 - diameter_mm / 2000 / 2, charge_height_bottom + intermediate_stemming_m + charge_height_top / 7), 0.5 * diameter_mm / 1000, 0.5, edgecolor='black', facecolor='yellow', label='Top Booster')
+ax.add_patch(booster_top)
+
+# Add annotations
+arrowprops = dict(facecolor='black', shrink=0.05, width=1)
+ax.annotate(f'Bottom Charge Height: {charge_height_bottom:.2f} m', xy=(0.5 + diameter_mm / 2000 / 2, charge_height_bottom / 2), xytext=(1.5, charge_height_bottom / 2), arrowprops=dict(facecolor='black', shrink=0.05, width=1), ha='center', color='black')
+ax.annotate(f'Intermediate Stemming: {intermediate_stemming_m:.2f} m', xy=(0.5 + diameter_mm / 2000 / 2, charge_height_bottom + intermediate_stemming_m / 2), xytext=(1.5, charge_height_bottom + intermediate_stemming_m / 2), arrowprops=dict(facecolor='grey', shrink=0.05, width=1), ha='center', color='black')
+ax.annotate(f'Top\nCharge Height: {charge_height_top:.2f} m', xy=(0.5 + diameter_mm / 2000 / 2, charge_height_bottom + intermediate_stemming_m + charge_height_top / 2), xytext=(1.5, charge_height_bottom + intermediate_stemming_m + charge_height_top / 2), arrowprops=dict(facecolor='black', shrink=0.05, width=1), ha='center', color='black')
+ax.annotate(f'Top\nStemming: {top_stemming_m:.2f} m', xy=(0.5 + diameter_mm / 2000 / 2, charge_height_bottom + intermediate_stemming_m + charge_height_top + top_stemming_m / 2), xytext=(1.5, charge_height_bottom + intermediate_stemming_m + charge_height_top + top_stemming_m / 2), arrowprops=dict(facecolor='grey', shrink=0.05, width=1), ha='center', color='black')
+
+# Set plot limits and legend
+ax.set_ylim(-1, depth_m + 1)
+ax.set_xlim(0, 3)
+plt.legend(loc='upper right', fontsize='small')
+
+# Save plot as image
+combined_hole_diagram_img = BytesIO()
+plt.savefig(combined_hole_diagram_img, format='png')
+combined_hole_diagram_img.seek(0)
+combined_hole_diagram_base64 = base64.b64encode(combined_hole_diagram_img.getvalue()).decode('utf-8')
+
+# Display plot
+plt.show()
