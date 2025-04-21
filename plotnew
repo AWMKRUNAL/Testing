@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlastGEN - Blasting Simulation Tool</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind Config for Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        };
+    </script>
+    <!-- Custom CSS for Animations -->
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-in {
+            animation: fade-in 1s ease-in-out;
+        }
+    </style>
+    <script>
+        function printPage() {
+            window.print();
+        }
+    </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-md p-5 flex justify-between items-center">
+        <img src="https://companieslogo.com/img/orig/ADANIPOWER.NS-1427c780.png" alt="Adani Logo" class="h-10">
+        <h1 class="text-3xl font-extrabold tracking-tight">BlastGEN</h1>
+        <button id="theme-toggle" class="bg-gray-300 dark:bg-gray-700 px-4 py-2 rounded transition duration-300">
+            Theme Toggle
+        </button>
+    </header>
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-6 py-10 animate-fade-in">
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">Blasting Summary</h2>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="border p-2 bg-purple-600 text-white">SPECIFICATIONS</th>
+                        <th class="border p-2 bg-purple-600 text-white">DESCRIPTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spec, desc in summary_table %}
+                    <tr>
+                        <td class="border p-2">{{ spec }}</td>
+                        <td class="border p-2">{{ desc }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mt-10">
+            {% if animation_html %}
+                <h2 class="text-2xl font-bold mb-6 text-center">Blasting Animation</h2>
+                <div class="center-print">{{ animation_html|safe }}</div>
+            {% else %}
+                <h2 class="text-2xl font-bold mb-6 text-center">Blasting Pattern</h2>
+                <img class="center-print image-separator" src="data:image/png;base64,{{ blasting_pattern }}" alt="Blasting Pattern">
+            {% endif %}
+
+            {% if single_hole_diagram %}
+            <div class="image-separator mt-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">Direct Charged Hole</h2>
+                <img src="data:image/png;base64,{{ single_hole_diagram }}" alt="Single Hole Diagram">
+            </div>
+            {% endif %}
+
+            {% if combined_hole_diagram %}
+            <div class="image-separator mt-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">Decked Charged Hole</h2>
+                <img src="data:image/png;base64,{{ combined_hole_diagram }}" alt="Combined Hole Diagram">
+            </div>
+            {% endif %}
+        </section>
+
+        {% if post_blast_image %}
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mt-10">
+            <h2 class="text-2xl font-bold mb-6 text-center">Post-Blasting Image</h2>
+            <img class="center-print" src="data:image/png;base64,{{ post_blast_image }}" alt="Post-Blast Image">
+        </section>
+        {% endif %}
+    </main>
+    <!-- Footer -->
+    <footer class="text-center py-4 text-sm text-gray-600 dark:text-gray-400">
+        © <span id="year"></span> BlastGEN. All rights reserved. Designed and Developed by Krunal Chulbulkar
+    </footer>
+    <!-- JavaScript: Dark Mode & Footer Year -->
+    <script>
+        const toggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        // Apply saved theme
+        if (localStorage.getItem('theme') === 'dark') {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+        toggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+    <button onclick="printPage()" class="bg-purple-600 text-white px-4 py-2 rounded mt-6 mx-auto block">
+        Print
+    </button>
+</body>
+</html>
